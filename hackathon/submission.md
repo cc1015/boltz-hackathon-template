@@ -1,0 +1,2 @@
+# Submission Write-up
+For the antibody-antigen complex prediction task, our feature takes advantage of the pocket constraint provided by Boltz-2. To obtain potential contact residue indices, we utilize ANARCI antibody annotation tool to identfy CDR and framework regions. The annotated CDR residues are then weighted by binding propensity with values that correspond to relative hydrophobic and aromatic enrichment typical in binding interfaces. The residues are sorted by binding propensity weight and top indices are returned to be pocket contact inputs.
