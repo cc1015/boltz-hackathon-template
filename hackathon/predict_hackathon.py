@@ -11,6 +11,9 @@ from typing import Any, List, Optional
 import yaml
 from hackathon_api import Datapoint, Protein, SmallMolecule
 
+from config_generator import generate_all_possible_configs
+import copy
+
 # ---------------------------------------------------------------------------
 # ---- Participants should modify these four functions ----------------------
 # ---------------------------------------------------------------------------
@@ -46,7 +49,30 @@ def prepare_protein_complex(datapoint_id: str, proteins: List[Protein], input_di
 
     # Example: predict 5 structures
     cli_args = ["--diffusion_samples", "5"]
-    return [(input_dict, cli_args)]
+
+    inputs = []
+
+    heavy_seq = ''
+    light_seq = ''
+
+    for protein in proteins:
+        if protein.id == 'H':
+            heavy_seq = protein.sequence
+        if protein.id == 'L':
+            light_seq = protein.sequence
+
+    configs = generate_all_possible_configs(heavy_seq, light_seq)
+
+    for config in configs:
+        new_dict = copy.deepcopy(input_dict)
+        new_dict['constraints'] = [{
+            'pocket': {
+            'binder': 'A',
+            'contacts': config,
+            'max_distance': 12
+            }}]
+        inputs.append((new_dict, cli_args))
+    return inputs
 
 def prepare_protein_ligand(datapoint_id: str, protein: Protein, ligands: list[SmallMolecule], input_dict: dict, msa_dir: Optional[Path] = None) -> List[tuple[dict, List[str]]]:
     """
@@ -266,7 +292,7 @@ def _run_boltz_and_collect(datapoint) -> None:
     if not ranked_files:
         raise FileNotFoundError(f"No model files found for {datapoint.datapoint_id}")
 
-    for i, file_path in enumerate(ranked_files[:5]):
+    for i, file_path in enumerate(ranked_files):
         target = subdir / (f"model_{i}.pdb" if file_path.suffix == ".pdb" else f"model_{i}{file_path.suffix}")
         shutil.copy2(file_path, target)
         print(f"Saved: {target}")

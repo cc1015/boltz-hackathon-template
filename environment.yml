@@ -1,7 +1,11 @@
 name: boltzplatz
 channels:
+  - bioconda     
   - conda-forge
 dependencies:
   - python=3.11
   - pip
   - pymol-open-source
+  - biopython      
+  - hmmer=3.3.2 
+  - anarci 
